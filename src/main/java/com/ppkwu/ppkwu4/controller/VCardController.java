@@ -2,6 +2,7 @@ package com.ppkwu.ppkwu4.controller;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.ppkwu.ppkwu4.dto.VCardDTO;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -17,7 +18,7 @@ import java.util.List;
 public class VCardController {
 
     @GetMapping("test/{name}")
-        public List<JsonObject> test(@PathVariable String name) throws IOException {
+        public String test(@PathVariable String name) throws IOException {
         String url = "https://panoramafirm.pl/szukaj?k=" + name;
 
         Document doc = Jsoup
@@ -38,7 +39,16 @@ public class VCardController {
             }
         }
 
-        return jsonList;
+        return "jsonList";
+    }
+
+    private VCardDTO jsonToVCardDTO(JsonObject jsonObject) {
+        VCardDTO vCardDTO = new VCardDTO();
+        vCardDTO.setFormattedName(jsonObject.get("name").getAsString());
+        vCardDTO.setEmail(jsonObject.get("email").getAsString());
+        vCardDTO.setTelephoneNumber(jsonObject.get("telephone").getAsString());
+        vCardDTO.setUrl(jsonObject.get("sameAs").getAsString());
+        return vCardDTO;
     }
 
 }

@@ -1,5 +1,6 @@
 package com.ppkwu.ppkwu4.dto;
 
+import com.google.gson.JsonElement;
 import ezvcard.VCard;
 import ezvcard.parameter.EmailType;
 import ezvcard.parameter.TelephoneType;
