@@ -27,7 +27,7 @@ public class VCardController {
 
         Elements elements = doc.select("script");
 
-        List<JsonObject> jsonList = new ArrayList<>();
+        List<VCardDTO> cardsList = new ArrayList<>();
 
         for(int i=0;i<elements.size() - 1;i++) {
 
@@ -35,11 +35,11 @@ public class VCardController {
                 String json = elements.get(i).data();
                 //System.out.println(json);
                 JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
-                jsonList.add(jsonObject);
+                cardsList.add(jsonToVCardDTO(jsonObject));
             }
         }
 
-        return "jsonList";
+        return "test";
     }
 
     private VCardDTO jsonToVCardDTO(JsonObject jsonObject) {
