@@ -17,7 +17,7 @@ import java.util.List;
 public class VCardController {
 
     @GetMapping("test/{name}")
-        public String test(@PathVariable String name) throws IOException {
+        public List<JsonObject> test(@PathVariable String name) throws IOException {
         String url = "https://panoramafirm.pl/szukaj?k=" + name;
 
         Document doc = Jsoup
@@ -38,7 +38,7 @@ public class VCardController {
             }
         }
 
-        return url;
+        return jsonList;
     }
 
 }
