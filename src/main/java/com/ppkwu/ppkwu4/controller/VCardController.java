@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -25,7 +26,7 @@ public class VCardController {
 
         Elements elements = doc.select("script");
 
-
+        List<JsonObject> jsonList = new ArrayList<>();
 
         for(int i=0;i<elements.size() - 1;i++) {
 
@@ -33,7 +34,7 @@ public class VCardController {
                 String json = elements.get(i).data();
                 //System.out.println(json);
                 JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
-                //System.out.println(jsonObject.get("name"));
+                jsonList.add(jsonObject);
             }
         }
 
