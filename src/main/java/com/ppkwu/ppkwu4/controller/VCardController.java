@@ -18,7 +18,7 @@ import java.util.List;
 public class VCardController {
 
     @GetMapping("test/{name}")
-        public String test(@PathVariable String name) throws IOException {
+        public List<VCardDTO> test(@PathVariable String name) throws IOException {
         String url = "https://panoramafirm.pl/szukaj?k=" + name;
 
         Document doc = Jsoup
@@ -29,25 +29,35 @@ public class VCardController {
 
         List<VCardDTO> cardsList = new ArrayList<>();
 
-        for(int i=0;i<elements.size() - 1;i++) {
+        for(int i=0;i<elements.size() - 2;i++) {
 
             if(elements.get(i).attr("type").equals("application/ld+json")) {
                 String json = elements.get(i).data();
                 //System.out.println(json);
                 JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
-                cardsList.add(jsonToVCardDTO(jsonObject));
+                if(jsonObject.has("name")) {
+                    cardsList.add(jsonToVCardDTO(jsonObject));
+                }
             }
         }
 
-        return "test";
+        return cardsList;
     }
 
     private VCardDTO jsonToVCardDTO(JsonObject jsonObject) {
         VCardDTO vCardDTO = new VCardDTO();
-        vCardDTO.setFormattedName(jsonObject.get("name").getAsString());
-        vCardDTO.setEmail(jsonObject.get("email").getAsString());
-        vCardDTO.setTelephoneNumber(jsonObject.get("telephone").getAsString());
-        vCardDTO.setUrl(jsonObject.get("sameAs").getAsString());
+        if(jsonObject.has("name")) {
+            vCardDTO.setFormattedName(jsonObject.get("name").getAsString());
+        }
+        if(jsonObject.has("email")) {
+            vCardDTO.setEmail(jsonObject.get("email").getAsString());
+        }
+        if(jsonObject.has("telephone")) {
+            vCardDTO.setTelephoneNumber(jsonObject.get("telephone").getAsString());
+        }
+        if(jsonObject.has("sameAs")) {
+            vCardDTO.setUrl(jsonObject.get("sameAs").getAsString());
+        }
         return vCardDTO;
     }
 
