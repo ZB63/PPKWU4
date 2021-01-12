@@ -11,12 +11,20 @@ import ezvcard.parameter.TelephoneType;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +59,7 @@ public class VCardController {
     }
 
     @GetMapping("vcard/{phraseToSearch}/{name}")
-    public List<VCardDTO> generateVCard(@PathVariable String phraseToSearch, @PathVariable String name) throws IOException {
+    public ResponseEntity generateVCard(@PathVariable String phraseToSearch, @PathVariable String name) throws IOException {
         String url = "https://panoramafirm.pl/szukaj?k=" + phraseToSearch;
 
         Document doc = Jsoup
@@ -61,7 +69,6 @@ public class VCardController {
         Elements elements = doc.select("script");
 
         for(int i=0;i<elements.size() - 2;i++) {
-
             if(elements.get(i).attr("type").equals("application/ld+json")) {
                 String json = elements.get(i).data();
                 JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
@@ -69,15 +76,24 @@ public class VCardController {
                     // here build and send vcard
                     VCard vCard = jsonToVCard(jsonObject);
 
-                    File file = new File("VCard - " + jsonObject.get("name").getAsString() + ".vcf");
+                    File file = new File("VCard - " + name + ".vcf");
                     Ezvcard.write(vCard).version(VCardVersion.V3_0).go(file);
-
-                    System.out.println("Found " + name);
+                    break;
                 }
             }
         }
 
-        return null;
+        Path path = Paths.get("VCard - " + name + ".vcf");
+        Resource resource = null;
+        try {
+            resource = new UrlResource(path.toUri());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 
     private VCardDTO jsonToVCardDTO(JsonObject jsonObject) {
