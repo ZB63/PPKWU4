@@ -14,6 +14,7 @@ import org.jsoup.select.Elements;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -68,6 +69,8 @@ public class VCardController {
 
         Elements elements = doc.select("script");
 
+        boolean fileCreated = false;
+
         for(int i=0;i<elements.size() - 2;i++) {
             if(elements.get(i).attr("type").equals("application/ld+json")) {
                 String json = elements.get(i).data();
@@ -78,22 +81,27 @@ public class VCardController {
 
                     File file = new File("VCard - " + name + ".vcf");
                     Ezvcard.write(vCard).version(VCardVersion.V3_0).go(file);
+                    fileCreated = true;
                     break;
                 }
             }
         }
 
-        Path path = Paths.get("VCard - " + name + ".vcf");
-        Resource resource = null;
-        try {
-            resource = new UrlResource(path.toUri());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        if(fileCreated) {
+            Path path = Paths.get("VCard - " + name + ".vcf");
+            Resource resource = null;
+            try {
+                resource = new UrlResource(path.toUri());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType("application/octet-stream"))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
         }
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/octet-stream"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
     private VCardDTO jsonToVCardDTO(JsonObject jsonObject) {
