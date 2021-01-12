@@ -2,9 +2,106 @@
 <html>
 <body>
 
-<h1>My First Heading</h1>
+<h2>VCard generator - Panorama firm</h2>
 
-<p>My first paragraph.</p>
+<label for="searchField">Search:</label>
+<input type="text" id="searchField" name="searchField">
+
+<button type="button" onclick="searchRequest()">Search</button>
+
+<br/>
+
+<div id="demo1" class="collapse">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Telephone</th>
+            <th>Email</th>
+            <th>Url</th>
+            <th>VCard</th>
+        </tr>
+        </thead>
+        <tbody id="table_body">
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+function searchRequest() {
+
+    let phraseToSearch = document.getElementById("searchField").value;
+
+    let requestLoggedUser = new XMLHttpRequest()
+
+    requestLoggedUser.open('GET', "http://localhost:8080/search/" + phraseToSearch, true)
+    requestLoggedUser.onload = function () {
+
+      let table_body = document.getElementById('table_body')
+      let result = JSON.parse(this.response)
+
+      for (let value in result) {
+            if (result.hasOwnProperty(value)) {
+                let tr = document.createElement("tr")
+
+                let td1 = document.createElement("td")
+                let textnode1 = document.createTextNode(result[value].formattedName)
+                td1.appendChild(textnode1);
+
+                let td2 = document.createElement("td")
+                let textnode2 = document.createTextNode(result[value].telephoneNumber)
+                td2.appendChild(textnode2)
+
+                let td3 = document.createElement("td")
+                let textnode3 = document.createTextNode(result[value].email)
+                td3.appendChild(textnode3)
+
+                let td4 = document.createElement("td")
+                let textnode4 = document.createTextNode(result[value].url)
+                td4.appendChild(textnode4)
+
+                let td5 = document.createElement("td")
+
+                let button_download = document.createElement("input");
+                button_download.type = "button";
+                button_download.value = "download";
+                button_download.onclick = () => {
+                    let downloadRequest = new XMLHttpRequest()
+                    let phraseToSearch = document.getElementById("searchField").value;
+                    downloadRequest.open('GET', "http://localhost:8080/vcard/" + phraseToSearch + "/" + result[value].formattedName , true)
+                    downloadRequest.onload = function () {
+                        downloadToFile(this.response, 'vcard.vcf', 'text/plain')
+                    }
+                    downloadRequest.send()
+                };
+
+                td5.appendChild(button_download)
+
+                tr.appendChild(td1)
+                tr.appendChild(td2)
+                tr.appendChild(td3)
+                tr.appendChild(td4)
+                tr.appendChild(td5)
+                table_body.appendChild(tr)
+            }
+       }
+    }
+    requestLoggedUser.send()
+
+    const downloadToFile = (content, filename, contentType) => {
+      const a = document.createElement('a');
+      const file = new Blob([content], {type: contentType});
+
+      a.href= URL.createObjectURL(file);
+      a.download = filename;
+      a.click();
+
+        URL.revokeObjectURL(a.href);
+    };
+}
+
+</script>
 
 </body>
 </html>
