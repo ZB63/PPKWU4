@@ -1,0 +1,8 @@
+BEGIN:VCARD
+VERSION:3.0
+PRODID:ez-vcard 0.11.2
+FN:Jarosław Groszko Indywidualna praktyka lekarska
+EMAIL;TYPE=work:jarg@mp.pl
+TEL;TYPE=work:32 2896403
+URL:http://www.groszko.pl
+END:VCARD
